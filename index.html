@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIAT - Apotek Terdistribusi</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f0f4f8;
+      }
+
+      header {
+        background: linear-gradient(135deg, #1b4332, #2d6a4f);
+        color: white;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      header h1 {
+        font-size: 22px;
+      }
+      header p {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 3px;
+      }
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: auto;
+      }
+      .online {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .offline {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .nav {
+        background: #2d6a4f;
+        display: flex;
+        gap: 5px;
+        padding: 0 40px;
+        border-top: 1px solid #1b4332;
+      }
+      .nav button {
+        background: none;
+        color: rgba(255, 255, 255, 0.7);
+        border: none;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-size: 14px;
+        border-bottom: 3px solid transparent;
+      }
+      .nav button.active,
+      .nav button:hover {
+        color: white;
+        border-bottom: 3px solid #74c69d;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .card h2 {
+        color: #1b4332;
+        margin-bottom: 18px;
+        font-size: 17px;
+      }
+
+      label {
+        font-size: 13px;
+        color: #555;
+        font-weight: 600;
+      }
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        margin: 5px 0 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border 0.2s;
+      }
+      input:focus {
+        border-color: #2d6a4f;
+      }
+
+      .btn {
+        background: #2d6a4f;
+        color: white;
+        padding: 11px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: #1b4332;
+      }
+      .btn-secondary {
+        background: #e9f5ee;
+        color: #2d6a4f;
+        margin-left: 10px;
+      }
+      .btn-secondary:hover {
+        background: #d1fae5;
+      }
+
+      .result {
+        background: #1a1a2e;
+        color: #74c69d;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 13px;
+        white-space: pre-wrap;
+        min-height: 45px;
+        font-family: monospace;
+      }
+      .result.error {
+        color: #f87171;
+      }
+      .result.success {
+        color: #4ade80;
+      }
+
+      .token-box {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: #166534;
+        margin-top: 10px;
+        word-break: break-all;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      .info-label {
+        font-size: 13px;
+        color: #888;
+      }
+      .info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1b4332;
+      }
+
+      @media (max-width: 600px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>🏥 SIAT - Sistem Informasi Apotek Terdistribusi</h1>
+      </div>
+      <span class="badge offline" id="status">⬤ Offline</span>
+    </header>
+
+    <nav class="nav">
+      <button class="active" onclick="showPage('login')">🔐 Login</button>
+      <button onclick="showPage('obat')">💊 Obat</button>
+      <button onclick="showPage('cabang')">🏪 Cabang</button>
+      <button onclick="showPage('transaksi')">🧾 Transaksi</button>
+      <button onclick="showPage('sync')">🔄 Sinkronisasi</button>
+      <button onclick="showPage('stok')">🔍 Cek Stok</button>
+    </nav>
+
+    <div class="container">
+      <!-- LOGIN -->
+      <div class="page active" id="page-login">
+        <div class="card">
+          <h2>🔐 Login Pengguna</h2>
+          <label>Username</label>
+          <input id="username" value="kasir1" placeholder="Username" />
+          <label>Password</label>
+          <input
+            id="password"
+            type="password"
+            value="password123"
+            placeholder="Password"
+          />
+          <button class="btn" onclick="login()">Login</button>
+          <div id="token-box"></div>
+          <div class="result" id="res-login">
+            Silakan login untuk menggunakan sistem...
+          </div>
+        </div>
+      </div>
+
+      <!-- OBAT -->
+      <div class="page" id="page-obat">
+        <div class="card">
+          <h2>💊 Tambah Obat Baru</h2>
+          <label>Nama Obat</label>
+          <input id="nama-obat" value="Amoxicillin" placeholder="Nama Obat" />
+          <label>Harga (Rp)</label>
+          <input
+            id="harga-obat"
+            type="number"
+            value="8000"
+            placeholder="Harga"
+          />
+          <label>Stok Minimal</label>
+          <input
+            id="stok-minimal"
+            type="number"
+            value="10"
+            placeholder="Stok Minimal"
+          />
+          <button class="btn" onclick="tambahObat()">Tambah Obat</button>
+          <button class="btn btn-secondary" onclick="lihatObat()">
+            Lihat Semua Obat
+          </button>
+          <div class="result" id="res-obat">-</div>
+        </div>
+      </div>
+
+      <!-- CABANG -->
+      <div class="page" id="page-cabang">
+        <div class="card">
+          <h2>🏪 Tambah Cabang Baru</h2>
+          <label>Nama Cabang</label>
+          <input id="nama-cabang" value="" placeholder="Nama Cabang" />
+          <label>Alamat</label>
+          <input id="alamat-cabang" value="" placeholder="Alamat" />
+          <button class="btn" onclick="tambahCabang()">Tambah Cabang</button>
+          <button class="btn btn-secondary" onclick="lihatCabang()">
+            Lihat Semua Cabang
+          </button>
+          <div class="result" id="res-cabang">-</div>
+        </div>
+      </div>
+
+      <!-- TRANSAKSI -->
+      <div class="page" id="page-transaksi">
+        <div class="card">
+          <h2>🧾 Buat Transaksi</h2>
+          <div class="grid2">
+            <div>
+              <label>ID Cabang</label>
+              <input id="trx-cabang" type="number" value="1" />
+              <label>ID Obat</label>
+              <input id="trx-obat" type="number" value="1" />
+            </div>
+            <div>
+              <label>Jumlah</label>
+              <input id="trx-jumlah" type="number" value="5" />
+              <label>Total Harga (Rp)</label>
+              <input id="trx-total" type="number" value="25000" />
+            </div>
+          </div>
+          <button class="btn" onclick="buatTransaksi()">Buat Transaksi</button>
+          <button class="btn btn-secondary" onclick="lihatTransaksi()">
+            Lihat Semua Transaksi
+          </button>
+          <div class="result" id="res-transaksi">-</div>
+        </div>
+      </div>
+
+      <!-- SINKRONISASI -->
+      <div class="page" id="page-sync">
+        <div class="card">
+          <h2>🔄 Sinkronisasi Data Cabang ke Pusat</h2>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px">
+            Simulasi pengiriman data transaksi dari cabang ke server pusat saat
+            koneksi kembali tersedia.
+          </p>
+          <label>ID Cabang</label>
+          <input id="sync-cabang" type="number" value="1" />
+          <label>ID Obat</label>
+          <input id="sync-obat" type="number" value="1" />
+          <label>Jumlah</label>
+          <input id="sync-jumlah" type="number" value="3" />
+          <label>Total Harga (Rp)</label>
+          <input id="sync-total" type="number" value="15000" />
+          <button class="btn" onclick="sinkronisasi()">
+            🔄 Sinkronisasi Sekarang
+          </button>
+          <div class="result" id="res-sync">-</div>
+        </div>
+      </div>
+
+      <!-- CEK STOK -->
+      <div class="page" id="page-stok">
+        <div class="card">
+          <h2>🔍 Cek Stok Lintas Cabang</h2>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px">
+            Cari ketersediaan obat di seluruh jaringan cabang apotek.
+          </p>
+          <label>Nama Obat</label>
+          <input
+            id="cari-obat"
+            value="Paracetamol"
+            placeholder="Ketik nama obat..."
+          />
+          <button class="btn" onclick="cekStok()">Cari Stok</button>
+          <div class="result" id="res-stok">-</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const BASE = "http://localhost:8000";
+      let token = "";
+
+      function showPage(name) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav button")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById("page-" + name).classList.add("active");
+        event.target.classList.add("active");
+      }
+
+      async function cekServer() {
+        try {
+          const res = await fetch(BASE + "/");
+          const el = document.getElementById("status");
+          if (res.ok) {
+            el.textContent = "⬤ Online";
+            el.className = "badge online";
+          }
+        } catch {
+          document.getElementById("status").textContent = "⬤ Offline";
+          document.getElementById("status").className = "badge offline";
+        }
+      }
+
+      function setResult(id, data, isError = false) {
+        const el = document.getElementById(id);
+        el.textContent = JSON.stringify(data, null, 2);
+        el.className = "result " + (isError ? "error" : "success");
+      }
+
+      async function login() {
+        try {
+          const form = new FormData();
+          form.append("username", document.getElementById("username").value);
+          form.append("password", document.getElementById("password").value);
+          const res = await fetch(BASE + "/login", {
+            method: "POST",
+            body: form,
+          });
+          const data = await res.json();
+          if (data.access_token) {
+            token = data.access_token;
+            document.getElementById("token-box").innerHTML =
+              `<div class="token-box">✅ Login berhasil! Token aktif: ${token.substring(0, 40)}...</div>`;
+            setResult("res-login", {
+              status: "Login berhasil!",
+              token_type: "bearer",
+            });
+          } else {
+            setResult("res-login", data, true);
+          }
+        } catch (e) {
+          setResult("res-login", { error: "Server tidak bisa diakses" }, true);
+        }
+      }
+
+      async function tambahObat() {
+        try {
+          const res = await fetch(BASE + "/obat/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nama_obat: document.getElementById("nama-obat").value,
+              harga: parseInt(document.getElementById("harga-obat").value),
+              stok_minimal: parseInt(
+                document.getElementById("stok-minimal").value,
+              ),
+            }),
+          });
+          setResult("res-obat", await res.json());
+        } catch {
+          setResult("res-obat", { error: "Gagal" }, true);
+        }
+      }
+
+      async function lihatObat() {
+        try {
+          const res = await fetch(BASE + "/obat/");
+          const data = await res.json();
+          let html =
+            "<table style='width:100%;border-collapse:collapse;font-size:13px;'>";
+          html +=
+            "<tr style='background:#2d6a4f;color:white;'><th style='padding:10px;'>ID</th><th style='padding:10px;'>Nama Obat</th><th style='padding:10px;'>Harga</th><th style='padding:10px;'>Stok Minimal</th></tr>";
+          data.forEach((o, i) => {
+            const bg = i % 2 === 0 ? "#f9f9f9" : "white";
+            html += `<tr style='background:${bg};'><td style='padding:10px;text-align:center;'>${o.id_obat}</td><td style='padding:10px;'>${o.nama_obat}</td><td style='padding:10px;'>Rp ${o.harga.toLocaleString()}</td><td style='padding:10px;text-align:center;'>${o.stok_minimal}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("res-obat").innerHTML = html;
+          document.getElementById("res-obat").style.color = "black";
+          document.getElementById("res-obat").style.background = "white";
+          document.getElementById("res-obat").style.padding = "0";
+        } catch {
+          setResult("res-obat", { error: "Gagal" }, true);
+        }
+      }
+
+      async function tambahCabang() {
+        try {
+          const res = await fetch(BASE + "/cabang/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nama_cabang: document.getElementById("nama-cabang").value,
+              alamat: document.getElementById("alamat-cabang").value,
+              zona_waktu: "WIB",
+            }),
+          });
+          setResult("res-cabang", await res.json());
+        } catch {
+          setResult("res-cabang", { error: "Gagal" }, true);
+        }
+      }
+
+      async function lihatCabang() {
+        try {
+          const res = await fetch(BASE + "/cabang/");
+          const data = await res.json();
+          let html =
+            "<table style='width:100%;border-collapse:collapse;font-size:13px;'>";
+          html +=
+            "<tr style='background:#2d6a4f;color:white;'><th style='padding:10px;'>ID</th><th style='padding:10px;'>Nama Cabang</th><th style='padding:10px;'>Alamat</th><th style='padding:10px;'>Zona Waktu</th></tr>";
+          data.forEach((c, i) => {
+            const bg = i % 2 === 0 ? "#f9f9f9" : "white";
+            html += `<tr style='background:${bg};'><td style='padding:10px;text-align:center;'>${c.id_cabang}</td><td style='padding:10px;'>${c.nama_cabang}</td><td style='padding:10px;'>${c.alamat}</td><td style='padding:10px;text-align:center;'>${c.zona_waktu}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("res-cabang").innerHTML = html;
+          document.getElementById("res-cabang").style.color = "black";
+          document.getElementById("res-cabang").style.background = "white";
+          document.getElementById("res-cabang").style.padding = "0";
+        } catch {
+          setResult("res-cabang", { error: "Gagal" }, true);
+        }
+      }
+
+      async function buatTransaksi() {
+        try {
+          const res = await fetch(BASE + "/transaksi/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_cabang: parseInt(document.getElementById("trx-cabang").value),
+              id_obat: parseInt(document.getElementById("trx-obat").value),
+              jumlah: parseInt(document.getElementById("trx-jumlah").value),
+              total_harga: parseInt(document.getElementById("trx-total").value),
+            }),
+          });
+          setResult("res-transaksi", await res.json());
+        } catch {
+          setResult("res-transaksi", { error: "Gagal" }, true);
+        }
+      }
+
+      async function lihatTransaksi() {
+        try {
+          const res = await fetch(BASE + "/transaksi/");
+          const data = await res.json();
+          let html =
+            "<table style='width:100%;border-collapse:collapse;font-size:13px;'>";
+          html +=
+            "<tr style='background:#2d6a4f;color:white;'><th style='padding:10px;'>ID</th><th style='padding:10px;'>ID Cabang</th><th style='padding:10px;'>ID Obat</th><th style='padding:10px;'>Jumlah</th><th style='padding:10px;'>Total</th><th style='padding:10px;'>Status</th></tr>";
+          data.forEach((t, i) => {
+            const bg = i % 2 === 0 ? "#f9f9f9" : "white";
+            const status =
+              t.sync_status === "synced"
+                ? "<span style='background:#d1fae5;color:#065f46;padding:3px 8px;border-radius:10px;font-size:11px;'>✓ Synced</span>"
+                : "<span style='background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:10px;font-size:11px;'>⏳ Pending</span>";
+            html += `<tr style='background:${bg};'><td style='padding:10px;text-align:center;'>${t.id_transaksi}</td><td style='padding:10px;text-align:center;'>${t.id_cabang}</td><td style='padding:10px;text-align:center;'>${t.id_obat}</td><td style='padding:10px;text-align:center;'>${t.jumlah}</td><td style='padding:10px;'>Rp ${t.total_harga.toLocaleString()}</td><td style='padding:10px;text-align:center;'>${status}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("res-transaksi").innerHTML = html;
+          document.getElementById("res-transaksi").style.color = "black";
+          document.getElementById("res-transaksi").style.background = "white";
+          document.getElementById("res-transaksi").style.padding = "0";
+        } catch {
+          setResult("res-transaksi", { error: "Gagal" }, true);
+        }
+      }
+
+      async function sinkronisasi() {
+        try {
+          const res = await fetch(BASE + "/sync/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_cabang: parseInt(document.getElementById("sync-cabang").value),
+              data_transaksi: [
+                {
+                  id_cabang: parseInt(
+                    document.getElementById("sync-cabang").value,
+                  ),
+                  id_obat: parseInt(document.getElementById("sync-obat").value),
+                  jumlah: parseInt(
+                    document.getElementById("sync-jumlah").value,
+                  ),
+                  total_harga: parseInt(
+                    document.getElementById("sync-total").value,
+                  ),
+                },
+              ],
+            }),
+          });
+          setResult("res-sync", await res.json());
+        } catch {
+          setResult("res-sync", { error: "Gagal" }, true);
+        }
+      }
+
+      async function cekStok() {
+        try {
+          const nama = document.getElementById("cari-obat").value;
+          const res = await fetch(
+            BASE + "/inventaris/stok-global?nama_obat=" + nama,
+          );
+          setResult("res-stok", await res.json());
+        } catch {
+          setResult("res-stok", { error: "Gagal" }, true);
+        }
+      }
+
+      cekServer();
+      setInterval(cekServer, 5000);
+    </script>
+  </body>
+</html>
