@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SIAT - Kasir Cabang</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f0f4f8;
+      }
+      header {
+        background: linear-gradient(135deg, #1b4332, #2d6a4f);
+        color: white;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      header p {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .online {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .offline {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .card h2 {
+        color: #1b4332;
+        margin-bottom: 18px;
+        font-size: 17px;
+      }
+      label {
+        font-size: 13px;
+        color: #555;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 4px;
+      }
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+      }
+      input:focus {
+        border-color: #2d6a4f;
+      }
+      .btn {
+        background: #2d6a4f;
+        color: white;
+        padding: 11px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .btn:hover {
+        background: #1b4332;
+      }
+      .btn-sync {
+        background: #1d4ed8;
+      }
+      .btn-sync:hover {
+        background: #1e40af;
+      }
+      .btn-logout {
+        background: #dc2626;
+        width: auto;
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+      .btn-logout:hover {
+        background: #b91c1c;
+      }
+      .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+      .alert.success {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .alert.error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .alert.info {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        background: #2d6a4f;
+        color: white;
+        padding: 10px;
+        text-align: left;
+      }
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+      .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+      .status-synced {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+      #halaman-login {
+        display: block;
+      }
+      #halaman-utama {
+        display: none;
+      }
+      .login-box {
+        max-width: 400px;
+        margin: 80px auto;
+      }
+      .user-info {
+        font-size: 13px;
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>🏪 SIAT - SISTEM APOTEK TERDISTRIBUSI</h1>
+        <br />
+        <p>Kasir Cabang</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px">
+        <span class="user-info" id="user-info"></span>
+        <button
+          class="btn btn-logout"
+          id="btn-logout"
+          onclick="logout()"
+          style="display: none"
+        >
+          Logout
+        </button>
+        <span class="badge offline" id="status">⬤ Offline</span>
+      </div>
+    </header>
+
+    <!-- HALAMAN LOGIN -->
+    <div id="halaman-login">
+      <div class="login-box">
+        <div class="card">
+          <h2>🔐 Login Kasir</h2>
+          <label>Username</label>
+          <input
+            type="text"
+            id="login-username"
+            placeholder="Username"
+            value="kasir1"
+          />
+          <label>Password</label>
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Password"
+            value="password123"
+          />
+          <button class="btn" onclick="login()">Login</button>
+          <div class="alert error" id="alert-login" style="display: none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN UTAMA -->
+    <div id="halaman-utama">
+      <div class="container">
+        <!-- Buat Transaksi -->
+        <div class="card">
+          <h2>🧾 Buat Transaksi Baru</h2>
+          <label>Pilih Obat</label>
+          <select
+            id="pilih-obat"
+            onchange="hitungHarga()"
+            style="
+              width: 100%;
+              padding: 10px;
+              margin-bottom: 14px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+            "
+          >
+            <option value="">-- Pilih Obat --</option>
+          </select>
+          <label>Jumlah</label>
+          <input
+            type="number"
+            id="jumlah"
+            value="1"
+            min="1"
+            placeholder="Jumlah"
+            oninput="hitungHarga()"
+          />
+          <label>Harga Satuan</label>
+          <input
+            type="text"
+            id="harga-satuan"
+            placeholder="Harga satuan"
+            readonly
+            style="background: #f9f9f9"
+          />
+          <label>Total Harga</label>
+          <input
+            type="text"
+            id="total-harga"
+            placeholder="Total harga"
+            readonly
+            style="background: #f9f9f9"
+          />
+          <button class="btn" onclick="buatTransaksi()">Buat Transaksi</button>
+          <div class="alert" id="alert-transaksi" style="display: none"></div>
+        </div>
+
+        <!-- Cek Stok Lintas Cabang -->
+        <div class="card">
+          <h2>🔍 Cek Stok Lintas Cabang</h2>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px">
+            Cari ketersediaan obat di seluruh jaringan cabang
+          </p>
+          <label>Nama Obat</label>
+          <input
+            type="text"
+            id="cari-obat"
+            value=""
+            placeholder="Ketik nama obat..."
+          />
+          <button class="btn" onclick="cekStok()">Cari Stok</button>
+          <div id="tabel-stok"></div>
+        </div>
+
+        <!-- Sinkronisasi -->
+        <div class="card">
+          <h2>🔄 Sinkronisasi ke Server Pusat</h2>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px">
+            Kirim semua transaksi pending ke server pusat
+          </p>
+          <button class="btn btn-sync" onclick="sinkronisasi()">
+            Sinkronisasi Sekarang
+          </button>
+          <div class="alert" id="alert-sync" style="display: none"></div>
+        </div>
+
+        <!-- Daftar Transaksi -->
+        <div class="card">
+          <h2>📋 Riwayat Transaksi Cabang</h2>
+          <button
+            class="btn"
+            onclick="lihatTransaksi()"
+            style="margin-bottom: 15px"
+          >
+            🔃 Refresh
+          </button>
+          <div id="tabel-transaksi"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const BASE_CABANG = "http://localhost:8001";
+      const BASE_PUSAT = "http://localhost:8000";
+      let token = "";
+
+      async function cekServer() {
+        try {
+          const res = await fetch(BASE_CABANG + "/");
+          const el = document.getElementById("status");
+          if (res.ok) {
+            el.textContent = "⬤ Online";
+            el.className = "badge online";
+          }
+        } catch {
+          document.getElementById("status").textContent = "⬤ Offline";
+          document.getElementById("status").className = "badge offline";
+        }
+      }
+
+      function showAlert(id, msg, type) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.className = "alert " + type;
+        el.style.display = "block";
+      }
+
+      async function login() {
+        try {
+          const form = new FormData();
+          form.append(
+            "username",
+            document.getElementById("login-username").value,
+          );
+          form.append(
+            "password",
+            document.getElementById("login-password").value,
+          );
+          const res = await fetch(BASE_PUSAT + "/login", {
+            method: "POST",
+            body: form,
+          });
+          const data = await res.json();
+          if (data.access_token) {
+            token = data.access_token;
+            const username = document.getElementById("login-username").value;
+            document.getElementById("halaman-login").style.display = "none";
+            document.getElementById("halaman-utama").style.display = "block";
+            document.getElementById("user-info").textContent = "👤 " + username;
+            document.getElementById("btn-logout").style.display = "block";
+            lihatTransaksi();
+            loadObat();
+          } else {
+            const alertEl = document.getElementById("alert-login");
+            alertEl.textContent = "❌ Username atau password salah!";
+            alertEl.style.display = "block";
+          }
+        } catch {
+          const alertEl = document.getElementById("alert-login");
+          alertEl.textContent = "❌ Server tidak bisa diakses";
+          alertEl.style.display = "block";
+        }
+      }
+
+      function logout() {
+        token = "";
+        document.getElementById("halaman-login").style.display = "block";
+        document.getElementById("halaman-utama").style.display = "none";
+        document.getElementById("user-info").textContent = "";
+        document.getElementById("btn-logout").style.display = "none";
+      }
+
+      async function buatTransaksi() {
+        try {
+          const select = document.getElementById("pilih-obat");
+          const id_obat = parseInt(select.value);
+          const jumlah = parseInt(document.getElementById("jumlah").value);
+          const selected = select.options[select.selectedIndex];
+          const harga = parseInt(selected.dataset.harga);
+          const total_harga = harga * jumlah;
+
+          if (!id_obat) {
+            showAlert("alert-transaksi", "❌ Pilih obat dulu!", "error");
+            return;
+          }
+
+          const res = await fetch(BASE_CABANG + "/transaksi/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_obat, jumlah, total_harga }),
+          });
+          const data = await res.json();
+          if (data.id_transaksi) {
+            showAlert(
+              "alert-transaksi",
+              "✅ Transaksi berhasil! | Status: " + data.sync_status,
+              "info",
+            );
+            lihatTransaksi();
+          } else {
+            showAlert(
+              "alert-transaksi",
+              "❌ Gagal: " + JSON.stringify(data),
+              "error",
+            );
+          }
+        } catch {
+          showAlert("alert-transaksi", "❌ Server tidak bisa diakses", "error");
+        }
+      }
+
+      async function loadObat() {
+        try {
+          const res = await fetch(BASE_PUSAT + "/obat/");
+          const data = await res.json();
+          const select = document.getElementById("pilih-obat");
+          select.innerHTML = '<option value="">-- Pilih Obat --</option>';
+          data.forEach((o) => {
+            select.innerHTML += `<option value="${o.id_obat}" data-harga="${o.harga}">${o.nama_obat}</option>`;
+          });
+        } catch {
+          console.log("Gagal load obat");
+        }
+      }
+
+      function hitungHarga() {
+        const select = document.getElementById("pilih-obat");
+        const jumlah = parseInt(document.getElementById("jumlah").value) || 0;
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.dataset.harga) {
+          const harga = parseInt(selected.dataset.harga);
+          document.getElementById("harga-satuan").value =
+            "Rp " + harga.toLocaleString();
+          document.getElementById("total-harga").value =
+            "Rp " + (harga * jumlah).toLocaleString();
+        }
+      }
+
+      async function sinkronisasi() {
+        try {
+          const res = await fetch(BASE_CABANG + "/sync/", { method: "POST" });
+          const data = await res.json();
+          showAlert("alert-sync", "✅ " + data.message, "success");
+          lihatTransaksi();
+        } catch {
+          showAlert("alert-sync", "❌ Gagal sinkronisasi", "error");
+        }
+      }
+
+      async function lihatTransaksi() {
+        try {
+          const res = await fetch(BASE_CABANG + "/transaksi/");
+          const data = await res.json();
+          let html =
+            "<table><tr><th>ID</th><th>ID Obat</th><th>Jumlah</th><th>Total Harga</th><th>Status</th></tr>";
+          data.forEach((t) => {
+            const status =
+              t.sync_status === "synced"
+                ? "<span class='status-synced'>✓ Synced</span>"
+                : "<span class='status-pending'>⏳ Pending</span>";
+            html += `<tr><td>${t.id_transaksi}</td><td>${t.id_obat}</td><td>${t.jumlah}</td><td>Rp ${t.total_harga.toLocaleString()}</td><td>${status}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-transaksi").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-transaksi").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      async function cekStok() {
+        try {
+          const nama = document.getElementById("cari-obat").value;
+          const res = await fetch(
+            BASE_PUSAT + "/inventaris/stok-global?nama_obat=" + nama,
+          );
+          const data = await res.json();
+          if (data.message) {
+            document.getElementById("tabel-stok").innerHTML =
+              `<p style='color:orange;margin-top:10px'>${data.message}</p>`;
+            return;
+          }
+          let html =
+            "<table style='margin-top:10px'><tr><th>Cabang</th><th>Alamat</th><th>Stok</th></tr>";
+          data.forEach((s) => {
+            html += `<tr><td>${s.cabang}</td><td>${s.alamat}</td><td>${s.stok}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-stok").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-stok").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      cekServer();
+      setInterval(cekServer, 5000);
+    </script>
+  </body>
+</html>

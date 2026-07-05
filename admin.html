@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SIAT - Admin Pusat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f0f4f8;
+      }
+      header {
+        background: linear-gradient(135deg, #1e3a5f, #2563eb);
+        color: white;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      header p {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .online {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .offline {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .card h2 {
+        color: #1e3a5f;
+        margin-bottom: 18px;
+        font-size: 17px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .stat-box {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .stat-box h3 {
+        font-size: 28px;
+        color: #2563eb;
+        font-weight: bold;
+      }
+      .stat-box p {
+        font-size: 13px;
+        color: #666;
+        margin-top: 5px;
+      }
+      .btn {
+        background: #2563eb;
+        color: white;
+        padding: 11px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+      .btn:hover {
+        background: #1d4ed8;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        background: #2563eb;
+        color: white;
+        padding: 10px;
+        text-align: left;
+      }
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+      .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+      .status-synced {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+      }
+      input:focus {
+        border-color: #2563eb;
+      }
+      label {
+        font-size: 13px;
+        color: #555;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .filter-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 10px;
+        margin-bottom: 15px;
+        align-items: end;
+      }
+      .filter-bar input,
+      .filter-bar select {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        height: 42px;
+      }
+      .filter-bar .btn {
+        margin: 0;
+        height: 42px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>📊 SIAT - Sistem Apotek Terdistribusi</h1>
+        <br />
+        <p>Administrator Pusat</p>
+      </div>
+      <span class="badge offline" id="status">⬤ Offline</span>
+    </header>
+
+    <div class="container">
+      <!-- Statistik -->
+      <div class="stats">
+        <div class="stat-box">
+          <h3 id="total-transaksi">0</h3>
+          <p>Total Transaksi</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="total-synced">0</h3>
+          <p>Sudah Tersinkronkan</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="total-pending">0</h3>
+          <p>Menunggu Sinkronisasi</p>
+        </div>
+      </div>
+
+      <!-- Semua Transaksi -->
+      <div class="card">
+        <h2>📋 Semua Transaksi Seluruh Cabang</h2>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: end;
+          "
+        >
+          <div>
+            <label>Tanggal</label>
+            <input type="date" id="filter-tanggal" />
+          </div>
+          <div>
+            <label>Cabang</label>
+            <select
+              id="filter-cabang"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 14px;
+              "
+            >
+              <option value="">Semua Cabang</option>
+            </select>
+          </div>
+          <div>
+            <label>Status</label>
+            <select
+              id="filter-status"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 14px;
+              "
+            >
+              <option value="">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="synced">Synced</option>
+            </select>
+          </div>
+          <div>
+            <button
+              class="btn"
+              onclick="lihatTransaksi()"
+              style="width: auto; margin: 0"
+            >
+              Filter
+            </button>
+          </div>
+        </div>
+        <br />
+        <button
+          class="btn"
+          onclick="resetFilter()"
+          style="
+            background: #6b7280;
+            margin-bottom: 10px;
+            width: auto;
+            padding: 5px 16px;
+          "
+        >
+          ✖ Reset Filter
+        </button>
+        <div id="tabel-transaksi"></div>
+      </div>
+
+      <!-- Semua Obat -->
+      <div class="card">
+        <h2>💊 Kelola Obat</h2>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+          "
+        >
+          <div>
+            <label>Nama Obat</label>
+            <input type="text" id="nama-obat" placeholder="Nama Obat" />
+          </div>
+          <div>
+            <label>Harga (Rp)</label>
+            <input type="number" id="harga-obat" placeholder="Harga" />
+          </div>
+          <div>
+            <label>Stok Minimal</label>
+            <input
+              type="number"
+              id="stok-minimal"
+              value="10"
+              placeholder="Stok Minimal"
+            />
+          </div>
+        </div>
+        <button class="btn" onclick="tambahObat()">➕ Tambah Obat</button>
+        <button
+          class="btn"
+          onclick="lihatObat()"
+          style="background: #6b7280; margin-left: 10px"
+        >
+          🔃 Refresh
+        </button>
+        <div class="alert" id="alert-obat"></div>
+        <div id="tabel-obat" style="margin-top: 15px"></div>
+      </div>
+
+      <!-- Semua Cabang -->
+      <div class="card">
+        <h2>🏪 Daftar Cabang</h2>
+        <button class="btn" onclick="lihatCabang()">🔃 Refresh Data</button>
+        <div id="tabel-cabang"></div>
+      </div>
+
+      <!-- Cek Stok -->
+      <div class="card">
+        <h2>🔍 Cek Stok Lintas Cabang</h2>
+        <label>Nama Obat</label>
+        <input
+          type="text"
+          id="cari-obat"
+          value="Paracetamol"
+          placeholder="Ketik nama obat..."
+        />
+        <button class="btn" onclick="cekStok()">Cari Stok</button>
+        <div id="tabel-stok"></div>
+      </div>
+    </div>
+
+    <script>
+      const BASE = "http://localhost:8000";
+
+      async function cekServer() {
+        try {
+          const res = await fetch(BASE + "/");
+          const el = document.getElementById("status");
+          if (res.ok) {
+            el.textContent = "⬤ Online";
+            el.className = "badge online";
+          }
+        } catch {
+          document.getElementById("status").textContent = "⬤ Offline";
+          document.getElementById("status").className = "badge offline";
+        }
+      }
+
+      async function lihatTransaksi() {
+        try {
+          const res = await fetch(BASE + "/transaksi/");
+          let data = await res.json();
+
+          const filterTanggal = document.getElementById("filter-tanggal").value;
+          const filterCabang = document.getElementById("filter-cabang").value;
+          const filterStatus = document.getElementById("filter-status").value;
+
+          if (filterTanggal) {
+            data = data.filter((t) => t.tanggal.startsWith(filterTanggal));
+          }
+          if (filterCabang) {
+            data = data.filter((t) => t.id_cabang == filterCabang);
+          }
+          if (filterStatus) {
+            data = data.filter((t) => t.sync_status === filterStatus);
+          }
+
+          document.getElementById("total-transaksi").textContent = data.length;
+          document.getElementById("total-synced").textContent = data.filter(
+            (t) => t.sync_status === "synced",
+          ).length;
+          document.getElementById("total-pending").textContent = data.filter(
+            (t) => t.sync_status === "pending",
+          ).length;
+
+          if (data.length === 0) {
+            document.getElementById("tabel-transaksi").innerHTML =
+              "<p style='color:orange;margin-top:10px'>Tidak ada transaksi yang sesuai filter.</p>";
+            return;
+          }
+
+          let html =
+            "<table><tr><th>ID</th><th>ID Cabang</th><th>ID Obat</th><th>Jumlah</th><th>Total Harga</th><th>Tanggal</th><th>Status</th></tr>";
+          data.forEach((t) => {
+            const status =
+              t.sync_status === "synced"
+                ? "<span class='status-synced'>✓ Synced</span>"
+                : "<span class='status-pending'>⏳ Pending</span>";
+            const tgl = new Date(t.tanggal).toLocaleString("id-ID");
+            html += `<tr><td>${t.id_transaksi}</td><td>${t.id_cabang}</td><td>${t.id_obat}</td><td>${t.jumlah}</td><td>Rp ${t.total_harga.toLocaleString()}</td><td>${tgl}</td><td>${status}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-transaksi").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-transaksi").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      function resetFilter() {
+        document.getElementById("filter-tanggal").value = "";
+        document.getElementById("filter-cabang").value = "";
+        document.getElementById("filter-status").value = "";
+        lihatTransaksi();
+      }
+
+      async function loadCabang() {
+        try {
+          const res = await fetch(BASE + "/cabang/");
+          const data = await res.json();
+          const select = document.getElementById("filter-cabang");
+          data.forEach((c) => {
+            select.innerHTML += `<option value="${c.id_cabang}">${c.nama_cabang}</option>`;
+          });
+        } catch {
+          console.log("Gagal load cabang");
+        }
+      }
+
+      async function tambahObat() {
+        try {
+          const nama = document.getElementById("nama-obat").value;
+          const harga = document.getElementById("harga-obat").value;
+          const stok = document.getElementById("stok-minimal").value;
+          if (!nama || !harga) {
+            showAlert(
+              "alert-obat",
+              "❌ Nama obat dan harga wajib diisi!",
+              "error",
+            );
+            return;
+          }
+          const res = await fetch(BASE + "/obat/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nama_obat: nama,
+              harga: parseInt(harga),
+              stok_minimal: parseInt(stok),
+            }),
+          });
+          const data = await res.json();
+          if (data.id_obat) {
+            showAlert(
+              "alert-obat",
+              "✅ Obat berhasil ditambahkan! ID: " + data.id_obat,
+              "success",
+            );
+            document.getElementById("nama-obat").value = "";
+            document.getElementById("harga-obat").value = "";
+            lihatObat();
+          } else {
+            showAlert(
+              "alert-obat",
+              "❌ Gagal: " + JSON.stringify(data),
+              "error",
+            );
+          }
+        } catch {
+          showAlert("alert-obat", "❌ Server tidak bisa diakses", "error");
+        }
+      }
+
+      function showAlert(id, msg, type) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.className = "alert " + type;
+      }
+
+      async function lihatObat() {
+        try {
+          const res = await fetch(BASE + "/obat/");
+          const data = await res.json();
+          let html =
+            "<table><tr><th>ID</th><th>Nama Obat</th><th>Harga</th><th>Stok Minimal</th></tr>";
+          data.forEach((o) => {
+            html += `<tr><td>${o.id_obat}</td><td>${o.nama_obat}</td><td>Rp ${o.harga.toLocaleString()}</td><td>${o.stok_minimal}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-obat").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-obat").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      async function lihatCabang() {
+        try {
+          const res = await fetch(BASE + "/cabang/");
+          const data = await res.json();
+          let html =
+            "<table><tr><th>ID</th><th>Nama Cabang</th><th>Alamat</th><th>Zona Waktu</th></tr>";
+          data.forEach((c) => {
+            html += `<tr><td>${c.id_cabang}</td><td>${c.nama_cabang}</td><td>${c.alamat}</td><td>${c.zona_waktu}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-cabang").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-cabang").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      async function cekStok() {
+        try {
+          const nama = document.getElementById("cari-obat").value;
+          const res = await fetch(
+            BASE + "/inventaris/stok-global?nama_obat=" + nama,
+          );
+          const data = await res.json();
+          if (data.message) {
+            document.getElementById("tabel-stok").innerHTML =
+              `<p style='color:orange;margin-top:10px'>${data.message}</p>`;
+            return;
+          }
+          let html =
+            "<table style='margin-top:10px'><tr><th>Cabang</th><th>Alamat</th><th>Stok</th></tr>";
+          data.forEach((s) => {
+            html += `<tr><td>${s.cabang}</td><td>${s.alamat}</td><td>${s.stok}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("tabel-stok").innerHTML = html;
+        } catch {
+          document.getElementById("tabel-stok").innerHTML =
+            "<p style='color:red'>Gagal memuat data</p>";
+        }
+      }
+
+      cekServer();
+      setInterval(cekServer, 5000);
+      lihatTransaksi();
+      lihatObat();
+      lihatCabang();
+      loadCabang();
+    </script>
+  </body>
+</html>
